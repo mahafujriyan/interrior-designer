@@ -1,76 +1,99 @@
 import { notFound } from "next/navigation";
+import Image from "next/image";
 import PageFrame from "@/app/components/PageFrame";
 import Reveal from "@/app/components/Reveal";
 import { projects } from "@/lib/site-content";
 
-export function generateStaticParams() {
-  return projects.map((project) => ({ slug: project.slug }));
-}
+// স্লাগ অনুযায়ী ইমেজ ম্যাপিং (আপনার জেনারেট করা ইমেজগুলো এখানে অ্যাড করুন)
+const projectImages = {
+  "riverview-residence": "https://images.unsplash.com/photo-1600607687940-4e2a09695d51?q=80&w=1200",
+  "northpoint-office": "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=1200",
+  "saffron-bistro": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=1200",
+};
 
-export function generateMetadata({ params }) {
-  const project = projects.find((item) => item.slug === params.slug);
-  if (!project) {
-    return { title: "Project Not Found" };
-  }
-  return {
-    title: project.name,
-    description: `${project.category} case study in ${project.location}.`,
-  };
+// এই ফাংশনটি স্ট্যাটিক পেজ জেনারেট করতে সাহায্য করে
+export async function generateStaticParams() {
+  return projects.map((project) => ({
+    slug: project.slug,
+  }));
 }
 
 export default function ProjectDetailPage({ params }) {
-  const project = projects.find((item) => item.slug === params.slug);
+  const { slug } = params;
+  
+  // ডাটা থেকে প্রজেক্ট খুঁজে বের করা
+  const project = projects.find((p) => p.slug === slug);
+
+  // যদি প্রজেক্ট না পাওয়া যায় তবে ৪-৪ পেজ দেখাবে
   if (!project) {
     notFound();
   }
 
+  const displayImage = projectImages[slug] || "https://images.unsplash.com/photo-1497366811353-6870744d04b2?q=80&w=1200";
+
   return (
     <PageFrame>
-      <Reveal className="container-shell py-16">
-        <p className="text-sm uppercase tracking-[0.18em] text-[var(--accent-dark)]">{project.category}</p>
-        <h1 className="mt-2 text-5xl font-semibold">{project.name}</h1>
-        <p className="mt-2 text-[var(--muted)]">{project.location}</p>
-        <div className="mt-8 grid gap-8 md:grid-cols-2">
-          <div className="image-block min-h-[320px]" />
-          <article className="section-card p-7">
-            <h2 className="text-3xl font-semibold">Project Overview</h2>
-            <p className="mt-3 text-[var(--muted)]">{project.description}</p>
-            <p className="mt-5 text-sm text-[var(--muted)]">
-              <span className="font-semibold text-[var(--foreground)]">Timeline:</span> {project.timeline}
+      <article className="pb-24">
+        {/* Header Section */}
+        <Reveal className="container-shell pt-16 md:pt-28">
+          <div className="max-w-4xl">
+            <span className="text-xs uppercase tracking-[0.3em] text-amber-700 font-bold">
+              {project.category} — {project.location}
+            </span>
+            <h1 className="mt-6 text-5xl md:text-8xl font-light tracking-tighter text-gray-900 leading-[1] italic">
+              {project.name}
+            </h1>
+            <p className="mt-10 text-xl md:text-2xl text-gray-500 leading-relaxed font-light max-w-2xl">
+              {project.description}
             </p>
-            <p className="text-sm text-[var(--muted)]">
-              <span className="font-semibold text-[var(--foreground)]">Budget:</span> {project.budget}
-            </p>
-          </article>
-        </div>
+          </div>
+        </Reveal>
 
-        <div className="mt-8 grid gap-6 md:grid-cols-2">
-          <article className="section-card p-7">
-            <h3 className="text-2xl font-semibold">Client Requirement</h3>
-            <p className="mt-3 text-[var(--muted)]">{project.clientRequirement}</p>
-          </article>
-          <article className="section-card p-7">
-            <h3 className="text-2xl font-semibold">Concept and Moodboard</h3>
-            <p className="mt-3 text-[var(--muted)]">{project.concept}</p>
-          </article>
-          <article className="section-card p-7">
-            <h3 className="text-2xl font-semibold">3D Render and Final Photography</h3>
-            <p className="mt-3 text-[var(--muted)]">Rendered approval scenes were translated into built details with styling refinements.</p>
-          </article>
-          <article className="section-card p-7">
-            <h3 className="text-2xl font-semibold">Before and After</h3>
-            <p className="mt-3 text-[var(--muted)]">Existing layout constraints were reworked for circulation, storage, and visual balance.</p>
-          </article>
-          <article className="section-card p-7">
-            <h3 className="text-2xl font-semibold">Materials Used</h3>
-            <p className="mt-3 text-[var(--muted)]">{project.materials}</p>
-          </article>
-          <article className="section-card p-7">
-            <h3 className="text-2xl font-semibold">Client Feedback</h3>
-            <p className="mt-3 text-[var(--muted)]">&quot;{project.feedback}&quot;</p>
-          </article>
-        </div>
-      </Reveal>
+        {/* Full-Width Hero Image */}
+        <Reveal delay={200} className="mt-20 px-4 md:px-10">
+          <div className="relative aspect-[21/9] w-full overflow-hidden rounded-[32px] md:rounded-[60px] shadow-2xl">
+            <Image 
+              src={displayImage} 
+              alt={project.name} 
+              fill 
+              className="object-cover scale-105 hover:scale-100 transition-transform duration-1000"
+              priority
+            />
+          </div>
+        </Reveal>
+
+        {/* Project Info Grid */}
+        <Reveal className="container-shell mt-24 grid gap-16 lg:grid-cols-3">
+          {/* Left Side: Stats */}
+          <div className="space-y-10 border-l border-gray-100 pl-8">
+            <div>
+              <p className="text-[10px] uppercase tracking-widest text-gray-400 font-bold">Year</p>
+              <p className="mt-2 text-lg font-medium">2023 — Completed</p>
+            </div>
+            <div>
+              <p className="text-[10px] uppercase tracking-widest text-gray-400 font-bold">Services</p>
+              <p className="mt-2 text-lg font-medium">Full Interior, FF&E, Lighting</p>
+            </div>
+            <div>
+              <p className="text-[10px] uppercase tracking-widest text-gray-400 font-bold">Area</p>
+              <p className="mt-2 text-lg font-medium">4,500 sq. ft.</p>
+            </div>
+          </div>
+
+          {/* Right Side: Narrative */}
+          <div className="lg:col-span-2 space-y-8">
+            <h3 className="text-3xl font-medium tracking-tight">The Vision</h3>
+            <div className="prose prose-lg text-gray-500 font-light leading-relaxed">
+              <p>
+                Every space tells a story. For {project.name}, our goal was to bridge the gap between architectural rigor and the softness of human habitability. We focused on material honesty—using unrefined stone, hand-oiled timbers, and bespoke metalwork.
+              </p>
+              <p className="mt-4">
+                The lighting was layered to create various moods throughout the day, ensuring that the transition from a workspace to a relaxation zone feels natural and effortless.
+              </p>
+            </div>
+          </div>
+        </Reveal>
+      </article>
     </PageFrame>
   );
 }
